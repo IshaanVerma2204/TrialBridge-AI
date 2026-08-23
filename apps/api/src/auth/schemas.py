@@ -1,10 +1,12 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
-from typing import Optional
+
+from pydantic import BaseModel, ConfigDict, EmailStr
+
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
     role: str = "patient"
+
 
 class UserResponse(BaseModel):
     id: str
@@ -14,10 +16,12 @@ class UserResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
-    email: Optional[str] = None
-    role: Optional[str] = None
+    email: str | None = None
+    role: str | None = None
