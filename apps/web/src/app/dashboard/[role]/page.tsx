@@ -95,10 +95,16 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
     try {
       // First, get the user's current conditions
       const profile = await fetchWithAuth("/patients/me");
-      const conditionToSync = profile.conditions || "cancer"; // Fallback to cancer if empty
       
-      alert(`Syncing trials from ClinicalTrials.gov for '${conditionToSync}' (this takes a few seconds to embed)...`);
-      await fetchWithAuth(`/trials/sync?condition=${encodeURIComponent(conditionToSync)}&limit=5`, { method: "POST" });
+      // Build a comprehensive query using all patient data
+      const queryParts = [];
+      if (profile.conditions) queryParts.push(profile.conditions);
+      if (profile.genes) queryParts.push(profile.genes);
+      
+      const queryToSync = queryParts.join(" ") || "cancer";
+      
+      alert(`Syncing trials from ClinicalTrials.gov for '${queryToSync}' (this takes a few seconds to embed)...`);
+      await fetchWithAuth(`/trials/sync?query=${encodeURIComponent(queryToSync)}&limit=5`, { method: "POST" });
       alert("Synced! Refreshing matches...");
       window.location.reload();
     } catch {
