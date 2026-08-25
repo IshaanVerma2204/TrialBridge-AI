@@ -5,6 +5,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/trialbridge"
+    QDRANT_URL: str = "http://localhost:6333"
     JWT_SECRET: str = "super-secret-key-replace-in-production"
 
     model_config = SettingsConfigDict(env_file="../../.env", extra="ignore")

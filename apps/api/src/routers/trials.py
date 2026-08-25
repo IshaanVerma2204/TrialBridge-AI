@@ -1,11 +1,38 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from typing import List
 
 from src.database import get_db
 from src.models import ClinicalTrial
 from src.schemas.trials import ClinicalTrialCreate, ClinicalTrialResponse
+from src.services.clinical_trials import fetch_trials_by_condition
+from src.services.ai_matcher import embed_and_store_trials
 
 router = APIRouter(prefix="/trials", tags=["trials"])
+
+
+@router.post("/sync", status_code=status.HTTP_200_OK)
+async def sync_trials(condition: str = "diabetes", limit: int = 10, db: Session = Depends(get_db)):
+    """Fetches trials from ClinicalTrials.gov and syncs to local Postgres and Qdrant."""
+    try:
+        trials = await fetch_trials_by_condition(condition, limit)
+        
+        # Save to Postgres
+        saved_trials = []
+        for t in trials:
+            db_trial = db.query(ClinicalTrial).filter(ClinicalTrial.nct_id == t["nct_id"]).first()
+            if not db_trial:
+                db_trial = ClinicalTrial(**t)
+                db.add(db_trial)
+            saved_trials.append(t)
+        db.commit()
+        
+        # Embed and store in Qdrant
+        embed_and_store_trials(saved_trials)
+        
+        return {"message": f"Successfully synced and embedded {len(saved_trials)} trials for '{condition}'."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/", response_model=list[ClinicalTrialResponse])
