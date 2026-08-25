@@ -24,3 +24,13 @@ export async function fetchClient(endpoint: string, options: RequestInit = {}) {
 
   return response.json();
 }
+
+export const fetchWithAuth = fetchClient;
+
+export const patientApi = {
+  getProfile: () => fetchClient('/patients/me'),
+  updateProfile: (data: Record<string, unknown>) => fetchClient('/patients/me', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+};
