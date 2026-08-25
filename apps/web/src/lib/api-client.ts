@@ -34,3 +34,8 @@ export const patientApi = {
     body: JSON.stringify(data),
   }),
 };
+
+export const researcherApi = {
+  getTrials: () => fetchClient('/researchers/trials'),
+  getMatchedPatients: (nctId: string) => fetchClient(`/researchers/trials/${nctId}/patients`),
+};

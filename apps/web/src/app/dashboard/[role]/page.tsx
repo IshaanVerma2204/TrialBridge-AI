@@ -16,6 +16,21 @@ interface TrialMatch {
   explanation: string;
 }
 
+interface ResearcherTrial {
+  nct_id: string;
+  title: string;
+  status: string;
+}
+
+interface ResearcherPatient {
+  patient_id: string;
+  age: number;
+  conditions: string;
+  genes: string;
+  compatibility_score: number;
+  explanation: string;
+}
+
 export default function DashboardPage(props: { params: Promise<{ role: string }> }) {
   const { user, logout } = useAuth();
   const [matches, setMatches] = useState<TrialMatch[]>([]);
@@ -24,6 +39,11 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
   // Next.js 15 requires awaiting/using params
   const params = use(props.params);
   const role = params.role; 
+
+  // Researcher State
+  const [trials, setTrials] = useState<ResearcherTrial[]>([]);
+  const [selectedTrial, setSelectedTrial] = useState<string | null>(null);
+  const [matchedPatients, setMatchedPatients] = useState<ResearcherPatient[]>([]);
 
   useEffect(() => {
     if (role === "patient") {
@@ -40,8 +60,36 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
         }
       };
       getMatches();
+    } else if (role === "researcher") {
+      const getTrials = async () => {
+        try {
+          const data = await fetchWithAuth("/researchers/trials");
+          if (Array.isArray(data)) {
+            setTrials(data);
+          }
+        } catch (error) {
+          console.error("Failed to load trials", error);
+        }
+      };
+      getTrials();
     }
   }, [role]);
+
+  useEffect(() => {
+    if (role === "researcher" && selectedTrial) {
+      const getPatients = async () => {
+        try {
+          const data = await fetchWithAuth(`/researchers/trials/${selectedTrial}/patients`);
+          if (Array.isArray(data)) {
+            setMatchedPatients(data);
+          }
+        } catch (error) {
+          console.error("Failed to load matched patients", error);
+        }
+      };
+      getPatients();
+    }
+  }, [selectedTrial, role]);
 
   const syncTrials = async () => {
     try {
@@ -84,6 +132,28 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
               {role === "patient" && (
                 <PatientProfileForm />
               )}
+
+              {role === "researcher" && (
+                <div className="bg-white p-6 rounded-xl border shadow-sm">
+                  <h2 className="text-xl font-semibold mb-4">My Clinical Trials</h2>
+                  {trials.length === 0 ? (
+                    <div className="text-slate-500 text-sm">No trials found.</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {trials.map(t => (
+                        <div 
+                          key={t.nct_id} 
+                          onClick={() => setSelectedTrial(t.nct_id)}
+                          className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedTrial === t.nct_id ? 'bg-blue-50 border-blue-300' : 'hover:bg-slate-50'}`}
+                        >
+                          <div className="font-semibold text-blue-900">{t.title}</div>
+                          <div className="text-xs text-slate-500 mt-1">{t.nct_id} • {t.status}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             
             <div className="space-y-6">
@@ -115,6 +185,39 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
                           <p className="text-sm text-slate-700 italic border-l-2 border-blue-300 pl-3">
                             &quot;{match.explanation}&quot;
                           </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {role === "researcher" && selectedTrial && (
+                <div className="bg-white p-6 rounded-xl border shadow-sm">
+                  <h2 className="text-xl font-semibold mb-4">Patient Candidate Pipeline</h2>
+                  <p className="text-sm text-slate-600 mb-4">AI-matched patients for {selectedTrial}</p>
+                  
+                  {matchedPatients.length === 0 ? (
+                    <div className="text-center py-12 text-slate-500 border-2 border-dashed rounded-lg">
+                      No matching patients found.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {matchedPatients.map((p, i) => (
+                        <div key={i} className="border p-4 rounded-lg bg-emerald-50/50">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-semibold text-emerald-900">{p.patient_id}</h3>
+                            <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded font-bold">{p.compatibility_score}% Match</span>
+                          </div>
+                          <div className="text-sm text-slate-600 mb-2">
+                            Age: {p.age} • Conditions: {p.conditions || "None"} • Genes: {p.genes || "None"}
+                          </div>
+                          <p className="text-sm text-slate-700 italic border-l-2 border-emerald-300 pl-3">
+                            &quot;{p.explanation}&quot;
+                          </p>
+                          <div className="mt-3">
+                            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">Invite to Trial</Button>
+                          </div>
                         </div>
                       ))}
                     </div>
