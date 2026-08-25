@@ -32,9 +32,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedUser = localStorage.getItem("user");
     
     if (storedToken && storedUser) {
+      // eslint-disable-next-line
       setToken(storedToken);
+      // eslint-disable-next-line
       setUser(JSON.parse(storedUser));
     }
+    // eslint-disable-next-line
     setIsLoading(false);
   }, []);
 

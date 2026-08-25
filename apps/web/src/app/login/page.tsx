@@ -29,8 +29,12 @@ export default function LoginPage() {
       });
 
       login(data.access_token, user);
-    } catch (err: any) {
-      setError(err.message || "Failed to login");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || "Failed to login");
+      } else {
+        setError("Failed to login");
+      }
     }
   };
 

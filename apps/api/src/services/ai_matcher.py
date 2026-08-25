@@ -1,8 +1,9 @@
 import os
-from qdrant_client import QdrantClient
-from qdrant_client.http.models import Distance, VectorParams, PointStruct
+from typing import Any
+
 from fastembed import TextEmbedding
-from typing import List, Dict, Any
+from qdrant_client import QdrantClient
+from qdrant_client.http.models import Distance, PointStruct, VectorParams
 
 # Initialize Qdrant locally in the .qdrant_data folder to avoid needing Docker
 qdrant_path = os.path.join(os.path.dirname(__file__), "..", "..", ".qdrant_data")
@@ -21,7 +22,7 @@ def init_qdrant():
             vectors_config=VectorParams(size=384, distance=Distance.COSINE),
         )
 
-def embed_and_store_trials(trials: List[Dict[str, Any]]):
+def embed_and_store_trials(trials: list[dict[str, Any]]):
     """Generates embeddings for trials and stores them in Qdrant."""
     if not trials:
         return
@@ -59,7 +60,7 @@ def embed_and_store_trials(trials: List[Dict[str, Any]]):
         points=points
     )
 
-def find_matches_for_patient(patient: Any, limit: int = 5) -> List[Dict[str, Any]]:
+def find_matches_for_patient(patient: Any, limit: int = 5) -> list[dict[str, Any]]:
     """Generates an embedding for a patient's profile and searches Qdrant for matching trials."""
     init_qdrant()
     
@@ -67,7 +68,7 @@ def find_matches_for_patient(patient: Any, limit: int = 5) -> List[Dict[str, Any
     patient_text = f"Age: {patient.age}. Conditions: {patient.conditions}. Genes: {patient.genes}. History: {patient.medical_history}"
     
     # Generate embedding
-    query_vector = list(embedding_model.embed([patient_text]))[0].tolist()
+    query_vector = next(iter(embedding_model.embed([patient_text]))).tolist()
     
     # Search Qdrant
     search_result = qdrant.search(

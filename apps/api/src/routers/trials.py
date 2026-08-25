@@ -1,12 +1,12 @@
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
 
 from src.database import get_db
 from src.models import ClinicalTrial
 from src.schemas.trials import ClinicalTrialCreate, ClinicalTrialResponse
-from src.services.clinical_trials import fetch_trials_by_condition
 from src.services.ai_matcher import embed_and_store_trials
+from src.services.clinical_trials import fetch_trials_by_condition
 
 router = APIRouter(prefix="/trials", tags=["trials"])
 
@@ -32,7 +32,7 @@ async def sync_trials(condition: str = "diabetes", limit: int = 10, db: Session 
         
         return {"message": f"Successfully synced and embedded {len(saved_trials)} trials for '{condition}'."}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/", response_model=list[ClinicalTrialResponse])

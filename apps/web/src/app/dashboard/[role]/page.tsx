@@ -7,9 +7,18 @@ import { Button } from "@/components/ui/button";
 import { PatientProfileForm } from "@/components/PatientProfileForm";
 import { fetchWithAuth } from "@/lib/api-client";
 
+interface TrialMatch {
+  nct_id: string;
+  title: string;
+  status: string;
+  location: string;
+  compatibility_score: string;
+  explanation: string;
+}
+
 export default function DashboardPage(props: { params: Promise<{ role: string }> }) {
   const { user, logout } = useAuth();
-  const [matches, setMatches] = useState<any[]>([]);
+  const [matches, setMatches] = useState<TrialMatch[]>([]);
   const [loadingMatches, setLoadingMatches] = useState(true);
   
   // Next.js 15 requires awaiting/using params
@@ -22,7 +31,7 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
         try {
           const data = await fetchWithAuth("/patients/me/matches");
           if (Array.isArray(data)) {
-            setMatches(data);
+            setMatches(data as TrialMatch[]);
           }
         } catch (error) {
           console.error("Failed to load matches", error);
@@ -40,7 +49,7 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
       await fetchWithAuth("/trials/sync?condition=diabetes&limit=5", { method: "POST" });
       alert("Synced! Refreshing matches...");
       window.location.reload();
-    } catch(e) {
+    } catch {
       alert("Error syncing trials");
     }
   }
@@ -104,7 +113,7 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
                             <span className="font-medium">{match.nct_id}</span> • {match.status} • {match.location}
                           </div>
                           <p className="text-sm text-slate-700 italic border-l-2 border-blue-300 pl-3">
-                            "{match.explanation}"
+                            &quot;{match.explanation}&quot;
                           </p>
                         </div>
                       ))}

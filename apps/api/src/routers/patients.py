@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from src.auth.dependencies import require_role, get_current_user
+from src.auth.dependencies import get_current_user, require_role
 from src.database import get_db
 from src.models import Patient, User
 from src.schemas.patients import PatientCreate, PatientResponse
@@ -27,7 +27,7 @@ def get_patient_matches(
         matches = find_matches_for_patient(patient)
         return matches
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/me", response_model=PatientResponse)

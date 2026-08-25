@@ -1,9 +1,10 @@
+from typing import Any
+
 import httpx
-from typing import List, Dict, Any
 
 CT_GOV_BASE_URL = "https://clinicaltrials.gov/api/v2/studies"
 
-async def fetch_trials_by_condition(condition: str, limit: int = 10) -> List[Dict[str, Any]]:
+async def fetch_trials_by_condition(condition: str, limit: int = 10) -> list[dict[str, Any]]:
     """
     Fetches recruiting clinical trials from ClinicalTrials.gov for a given condition.
     """
