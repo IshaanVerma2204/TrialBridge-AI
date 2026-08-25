@@ -93,8 +93,12 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
 
   const syncTrials = async () => {
     try {
-      alert("Syncing trials from ClinicalTrials.gov (this takes a few seconds to embed)...");
-      await fetchWithAuth("/trials/sync?condition=diabetes&limit=5", { method: "POST" });
+      // First, get the user's current conditions
+      const profile = await fetchWithAuth("/patients/me");
+      const conditionToSync = profile.conditions || "cancer"; // Fallback to cancer if empty
+      
+      alert(`Syncing trials from ClinicalTrials.gov for '${conditionToSync}' (this takes a few seconds to embed)...`);
+      await fetchWithAuth(`/trials/sync?condition=${encodeURIComponent(conditionToSync)}&limit=5`, { method: "POST" });
       alert("Synced! Refreshing matches...");
       window.location.reload();
     } catch {
