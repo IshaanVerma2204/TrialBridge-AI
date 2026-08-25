@@ -71,15 +71,15 @@ def find_matches_for_patient(patient: Any, limit: int = 5) -> list[dict[str, Any
     query_vector = next(iter(embedding_model.embed([patient_text]))).tolist()
     
     # Search Qdrant
-    search_result = qdrant.search(
+    search_result = qdrant.query_points(
         collection_name=COLLECTION_NAME,
-        query_vector=query_vector,
+        query=query_vector,
         limit=limit
     )
     
     # Format the results
     matches = []
-    for hit in search_result:
+    for hit in search_result.points:
         matches.append({
             "nct_id": hit.payload.get("nct_id"),
             "title": hit.payload.get("title"),
