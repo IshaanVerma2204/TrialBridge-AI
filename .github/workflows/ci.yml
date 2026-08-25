@@ -54,4 +54,5 @@ jobs:
       - name: Test Backend
         run: |
           cd apps/api
+          alembic upgrade head
           pytest tests
