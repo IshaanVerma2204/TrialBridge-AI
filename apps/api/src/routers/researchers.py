@@ -17,7 +17,7 @@ def get_researcher_trials(
         raise HTTPException(status_code=403, detail="Only researchers can view their trials")
     
     # Fetch up to 50 of the latest trials across all diseases
-    trials = db.query(ClinicalTrial).order_by(ClinicalTrial.id.desc()).limit(50).all()
+    trials = db.query(ClinicalTrial).order_by(ClinicalTrial.created_at.desc()).limit(50).all()
     return trials
 
 @router.get("/trials/{nct_id}/patients")
