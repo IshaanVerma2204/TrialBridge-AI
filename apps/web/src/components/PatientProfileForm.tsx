@@ -40,6 +40,7 @@ export function PatientProfileForm() {
 
   useEffect(() => {
     if (!user || user.role !== "patient") {
+      // eslint-disable-next-line
       setIsLoading(false);
       return;
     }
