@@ -70,3 +70,16 @@ class MatchEvaluation(Base):
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class TrialInvitation(Base):
+    __tablename__ = "trial_invitations"
+
+    id = Column(String, primary_key=True, default=generate_uuid, index=True)
+    patient_id = Column(String, index=True, nullable=False) # e.g. PAT-123456
+    trial_id = Column(String, index=True, nullable=False)
+    status = Column(String, default="pending") # pending, accepted, declined
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

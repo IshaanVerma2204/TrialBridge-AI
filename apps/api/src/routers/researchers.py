@@ -55,3 +55,41 @@ def get_matched_patients(
     # Sort by score descending
     results.sort(key=lambda x: x["compatibility_score"], reverse=True)
     return results
+
+from pydantic import BaseModel
+class InviteRequest(BaseModel):
+    patient_id: str
+
+from src.models import TrialInvitation
+
+@router.post("/trials/{nct_id}/invite")
+def invite_patient(
+    nct_id: str,
+    invite: InviteRequest,
+    db: Session = Depends(get_db), 
+    current_user = Depends(get_current_user)
+):
+    if current_user.role != "researcher":
+        raise HTTPException(status_code=403, detail="Only researchers can invite patients")
+        
+    trial = db.query(ClinicalTrial).filter(ClinicalTrial.nct_id == nct_id).first()
+    if not trial:
+        raise HTTPException(status_code=404, detail="Trial not found")
+        
+    # Check if already invited
+    existing_invite = db.query(TrialInvitation).filter(
+        TrialInvitation.trial_id == nct_id,
+        TrialInvitation.patient_id == invite.patient_id
+    ).first()
+    
+    if existing_invite:
+        return {"status": "success", "message": "Patient already invited"}
+        
+    new_invite = TrialInvitation(
+        trial_id=nct_id,
+        patient_id=invite.patient_id
+    )
+    db.add(new_invite)
+    db.commit()
+    
+    return {"status": "success", "message": "Invitation sent successfully"}

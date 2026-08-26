@@ -39,6 +39,18 @@ interface AdminStats {
   active_matches: number;
 }
 
+interface PatientInvitation {
+  invite_id: string;
+  status: string;
+  created_at: string;
+  trial: {
+    nct_id: string;
+    title: string;
+    status: string;
+    location: string;
+  }
+}
+
 export default function DashboardPage(props: { params: Promise<{ role: string }> }) {
   const { user, logout } = useAuth();
   
@@ -51,30 +63,39 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
   // Patient State
   const [matches, setMatches] = useState<TrialMatch[]>([]);
   const [loadingMatches, setLoadingMatches] = useState(true);
+  const [invitations, setInvitations] = useState<PatientInvitation[]>([]);
   
   // Researcher State
   const [trials, setTrials] = useState<ResearcherTrial[]>([]);
   const [selectedTrial, setSelectedTrial] = useState<string | null>(null);
   const [matchedPatients, setMatchedPatients] = useState<ResearcherPatient[]>([]);
+  const [inviteStatus, setInviteStatus] = useState<Record<string, string>>({});
 
   // Admin State
   const [stats, setStats] = useState<AdminStats | null>(null);
 
   useEffect(() => {
     if (role === "patient") {
-      const getMatches = async () => {
+      const getPatientData = async () => {
         try {
-          const data = await fetchWithAuth("/patients/me/matches");
-          if (Array.isArray(data)) {
-            setMatches(data as TrialMatch[]);
+          const [matchesData, invitesData] = await Promise.all([
+            fetchWithAuth("/patients/me/matches"),
+            fetchWithAuth("/patients/me/invitations")
+          ]);
+          
+          if (Array.isArray(matchesData)) {
+            setMatches(matchesData as TrialMatch[]);
+          }
+          if (Array.isArray(invitesData)) {
+            setInvitations(invitesData as PatientInvitation[]);
           }
         } catch (error) {
-          console.error("Failed to load matches", error);
+          console.error("Failed to load patient data", error);
         } finally {
           setLoadingMatches(false);
         }
       };
-      getMatches();
+      getPatientData();
     } else if (role === "researcher") {
       const getTrials = async () => {
         try {
@@ -115,6 +136,25 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
       getPatients();
     }
   }, [selectedTrial, role]);
+
+  const handleInvitePatient = async (patientId: string) => {
+    if (!selectedTrial) return;
+    
+    setInviteStatus(prev => ({ ...prev, [patientId]: 'sending' }));
+    
+    try {
+      await fetchWithAuth(`/researchers/trials/${selectedTrial}/invite`, {
+        method: "POST",
+        body: JSON.stringify({ patient_id: patientId })
+      });
+      setInviteStatus(prev => ({ ...prev, [patientId]: 'sent' }));
+      alert(`Invite sent to ${patientId} for trial ${selectedTrial}!`);
+    } catch (error) {
+      console.error("Failed to send invite", error);
+      setInviteStatus(prev => ({ ...prev, [patientId]: 'error' }));
+      alert("Error sending invitation.");
+    }
+  };
 
   const syncTrials = async () => {
     try {
@@ -272,6 +312,41 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
                   <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 min-h-[500px]">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                       <div>
+                        <h2 className="text-2xl font-extrabold text-slate-900">My Trial Invitations</h2>
+                        <p className="text-slate-500 text-sm mt-1">Direct invites from clinical researchers</p>
+                      </div>
+                    </div>
+                    
+                    {invitations.length === 0 ? (
+                      <div className="text-center py-10 mb-8 text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                        <div className="text-4xl mb-4">📬</div>
+                        <p className="text-sm max-w-sm mx-auto leading-relaxed">No invitations received yet. Make sure your profile is complete to attract researchers.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4 mb-8">
+                        {invitations.map((inv, i) => (
+                          <div key={i} className="group relative border border-emerald-100 p-5 rounded-2xl bg-emerald-50/30 shadow-sm hover:shadow-md transition-all duration-300">
+                            <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500 rounded-l-2xl"></div>
+                            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                              <div>
+                                <h3 className="font-bold text-lg text-slate-900 leading-tight">{inv.trial.title}</h3>
+                                <div className="flex flex-wrap gap-2 text-sm font-medium mt-2">
+                                  <span className="text-slate-500 bg-white px-2 py-1 rounded-md border border-slate-100">{inv.trial.nct_id}</span>
+                                  <span className="text-slate-500 bg-white px-2 py-1 rounded-md border border-slate-100">📍 {inv.trial.location}</span>
+                                </div>
+                              </div>
+                              <div className="flex flex-col gap-2 shrink-0">
+                                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full">Accept Invite</Button>
+                                <Button size="sm" variant="outline" className="rounded-full">Decline</Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pt-8 border-t border-slate-100">
+                      <div>
                         <h2 className="text-2xl font-extrabold text-slate-900">AI Trial Matches</h2>
                         <p className="text-slate-500 text-sm mt-1">Powered by semantic vector analysis</p>
                       </div>
@@ -373,10 +448,13 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
                             
                             <div className="flex justify-end mt-4">
                               <Button 
-                                onClick={() => alert(`Invite sent to ${p.patient_id} for trial ${selectedTrial}!`)}
-                                className="bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-md px-6 transition-transform hover:-translate-y-0.5"
+                                onClick={() => handleInvitePatient(p.patient_id)}
+                                disabled={inviteStatus[p.patient_id] === 'sending' || inviteStatus[p.patient_id] === 'sent'}
+                                className={`${inviteStatus[p.patient_id] === 'sent' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-slate-900 hover:bg-slate-800'} text-white rounded-full shadow-md px-6 transition-transform hover:-translate-y-0.5`}
                               >
-                                Invite to Trial
+                                {inviteStatus[p.patient_id] === 'sending' ? 'Sending...' : 
+                                 inviteStatus[p.patient_id] === 'sent' ? 'Invited ✓' : 
+                                 'Invite to Trial'}
                               </Button>
                             </div>
                           </div>

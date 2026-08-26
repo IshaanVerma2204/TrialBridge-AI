@@ -29,6 +29,44 @@ def get_patient_matches(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
+from src.models import TrialInvitation, ClinicalTrial
+
+@router.get("/me/invitations")
+def get_patient_invitations(
+    db: Session = Depends(get_db), 
+    current_user = Depends(get_current_user)
+):
+    if current_user.role != "patient":
+        raise HTTPException(status_code=403, detail="Only patients can view invitations")
+        
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        return []
+        
+    # Get all invites for this patient
+    # Join with ClinicalTrial to get trial details
+    invites = db.query(TrialInvitation, ClinicalTrial).join(
+        ClinicalTrial, TrialInvitation.trial_id == ClinicalTrial.nct_id
+    ).filter(
+        TrialInvitation.patient_id == f"PAT-{str(patient.id)[:6].upper()}"
+    ).all()
+    
+    results = []
+    for inv, trial in invites:
+        results.append({
+            "invite_id": inv.id,
+            "status": inv.status,
+            "created_at": inv.created_at,
+            "trial": {
+                "nct_id": trial.nct_id,
+                "title": trial.title,
+                "status": trial.status,
+                "location": trial.location
+            }
+        })
+        
+    return results
+
 
 @router.get("/me", response_model=PatientResponse)
 def get_my_patient_profile(

@@ -33,11 +33,16 @@ export const patientApi = {
     method: 'PUT',
     body: JSON.stringify(data),
   }),
+  getInvitations: () => fetchClient('/patients/me/invitations'),
 };
 
 export const researcherApi = {
   getTrials: () => fetchClient('/researchers/trials'),
   getMatchedPatients: (nctId: string) => fetchClient(`/researchers/trials/${nctId}/patients`),
+  invitePatient: (nctId: string, patientId: string) => fetchClient(`/researchers/trials/${nctId}/invite`, {
+    method: 'POST',
+    body: JSON.stringify({ patient_id: patientId })
+  }),
 };
 
 export const adminApi = {
