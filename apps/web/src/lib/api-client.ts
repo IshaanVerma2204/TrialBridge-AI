@@ -39,3 +39,7 @@ export const researcherApi = {
   getTrials: () => fetchClient('/researchers/trials'),
   getMatchedPatients: (nctId: string) => fetchClient(`/researchers/trials/${nctId}/patients`),
 };
+
+export const adminApi = {
+  getStats: () => fetchClient('/admin/stats'),
+};
