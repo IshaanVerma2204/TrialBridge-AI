@@ -144,92 +144,121 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
 
   return (
     <ProtectedRoute allowedRoles={[role]}>
-      <div className="min-h-screen bg-slate-50">
-        <header className="border-b bg-white sticky top-0 z-10">
+      <div className="min-h-screen bg-slate-50/50 relative">
+        {/* Background decorative blobs */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-400/5 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-400/5 rounded-full blur-3xl pointer-events-none -z-10" />
+
+        <header className="border-b border-slate-200/50 bg-white/70 backdrop-blur-md sticky top-0 z-50">
           <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-            <div className="font-bold text-xl tracking-tight text-blue-600 shrink-0">
+            <div className="font-extrabold text-xl tracking-tight text-blue-700 flex items-center gap-2 shrink-0">
+              <span className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xl shadow-md">T</span>
               TrialBridge AI
             </div>
             
             <form onSubmit={handleGlobalSearch} className="flex-1 max-w-md hidden md:flex">
-              <Input 
-                type="search" 
-                placeholder="Search trials, patients, or NCT IDs..." 
-                className="w-full bg-slate-50 border-slate-200"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+              <div className="relative w-full">
+                <svg xmlns="http://www.w3.org/2000/svg" className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <Input 
+                  type="search" 
+                  placeholder="Search trials, patients, or NCT IDs..." 
+                  className="w-full bg-slate-100/50 border-slate-200 pl-10 focus:bg-white transition-colors rounded-full"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
             </form>
 
             <div className="flex gap-4 items-center shrink-0">
-              <span className="text-sm font-medium text-slate-600 capitalize">{role} Portal</span>
-              <Button variant="outline" size="sm" onClick={logout}>
+              <span className="text-sm font-semibold text-slate-600 capitalize bg-slate-100 px-3 py-1 rounded-full">{role} Portal</span>
+              <Button variant="outline" size="sm" onClick={logout} className="rounded-full border-slate-200 hover:bg-slate-100">
                 Sign Out
               </Button>
             </div>
           </div>
         </header>
         
-        <main className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold mb-8 text-slate-900 capitalize">{role} Dashboard</h1>
+        <main className="container mx-auto px-4 py-10 z-10 relative">
+          <div className="flex items-end justify-between mb-8 animate-fade-in-up">
+            <div>
+              <h1 className="text-3xl font-extrabold text-slate-900 capitalize tracking-tight">{role} Dashboard</h1>
+              <p className="text-slate-500 mt-1">Manage your data, view insights, and access AI matches.</p>
+            </div>
+          </div>
           
           {role === "admin" ? (
-            <div className="space-y-8">
+            <div className="space-y-8 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white p-6 rounded-xl border shadow-sm">
-                  <div className="text-sm font-medium text-slate-500 mb-1">Total Patients</div>
-                  <div className="text-3xl font-bold text-slate-900">{stats?.total_patients || 0}</div>
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/40 hover:-translate-y-1 transition-transform">
+                  <div className="text-sm font-medium text-slate-500 mb-2 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-slate-300"></div> Total Patients</div>
+                  <div className="text-4xl font-extrabold text-slate-900">{stats?.total_patients || 0}</div>
                 </div>
-                <div className="bg-white p-6 rounded-xl border shadow-sm">
-                  <div className="text-sm font-medium text-slate-500 mb-1">Total Researchers</div>
-                  <div className="text-3xl font-bold text-slate-900">{stats?.total_researchers || 0}</div>
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/40 hover:-translate-y-1 transition-transform">
+                  <div className="text-sm font-medium text-slate-500 mb-2 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-slate-300"></div> Total Researchers</div>
+                  <div className="text-4xl font-extrabold text-slate-900">{stats?.total_researchers || 0}</div>
                 </div>
-                <div className="bg-white p-6 rounded-xl border shadow-sm">
-                  <div className="text-sm font-medium text-slate-500 mb-1">Active Trials</div>
-                  <div className="text-3xl font-bold text-slate-900">{stats?.total_trials || 0}</div>
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/40 hover:-translate-y-1 transition-transform">
+                  <div className="text-sm font-medium text-slate-500 mb-2 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-slate-300"></div> Active Trials</div>
+                  <div className="text-4xl font-extrabold text-slate-900">{stats?.total_trials || 0}</div>
                 </div>
-                <div className="bg-white p-6 rounded-xl border shadow-sm bg-blue-50/50 border-blue-100">
-                  <div className="text-sm font-medium text-blue-600 mb-1">AI Matches Found</div>
-                  <div className="text-3xl font-bold text-blue-900">{stats?.active_matches || 0}</div>
+                <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl border border-blue-500 shadow-lg shadow-blue-600/30 text-white hover:-translate-y-1 transition-transform relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-10 -translate-y-10"></div>
+                  <div className="text-sm font-medium text-blue-100 mb-2 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse"></div> AI Matches Found</div>
+                  <div className="text-4xl font-extrabold text-white relative z-10">{stats?.active_matches || 0}</div>
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-xl border shadow-sm">
-                <h2 className="text-xl font-semibold mb-4">System Controls</h2>
-                <p className="text-slate-600 mb-4">Manage the platform and manually trigger background jobs.</p>
+              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40">
+                <h2 className="text-xl font-bold text-slate-900 mb-2">System Controls</h2>
+                <p className="text-slate-500 mb-6 font-medium">Manage the platform and manually trigger background jobs.</p>
                 <div className="flex gap-4">
-                  <Button onClick={() => alert('Triggering Global Sync (Mock)')}>Trigger Global Sync</Button>
-                  <Button variant="outline" onClick={() => alert('Re-indexing Qdrant (Mock)')}>Re-index Vector DB</Button>
+                  <Button onClick={() => alert('Triggering Global Sync (Mock)')} className="rounded-full bg-slate-900 hover:bg-slate-800 shadow-md">Trigger Global Sync</Button>
+                  <Button variant="outline" onClick={() => alert('Re-indexing Qdrant (Mock)')} className="rounded-full border-slate-200">Re-index Vector DB</Button>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="space-y-6">
-                <div className="bg-white p-6 rounded-xl border shadow-sm">
-                   <h2 className="text-xl font-semibold mb-4">Welcome back!</h2>
-                   <p className="text-slate-600 mb-2">You are logged in as <strong>{user?.email}</strong>.</p>
+            <div className="grid lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-5 space-y-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/40">
+                   <div className="flex items-center gap-4 mb-2">
+                     <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-lg">
+                       {user?.email?.[0].toUpperCase()}
+                     </div>
+                     <div>
+                       <h2 className="text-xl font-bold text-slate-900">Welcome back!</h2>
+                       <p className="text-slate-500 text-sm">Logged in as <span className="font-medium text-slate-700">{user?.email}</span></p>
+                     </div>
+                   </div>
                 </div>
                 
                 {role === "patient" && (
-                  <PatientProfileForm />
+                  <div className="bg-white rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/40 overflow-hidden">
+                    <PatientProfileForm />
+                  </div>
                 )}
 
                 {role === "researcher" && (
-                  <div className="bg-white p-6 rounded-xl border shadow-sm">
-                    <h2 className="text-xl font-semibold mb-4">My Clinical Trials</h2>
+                  <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/40">
+                    <h2 className="text-xl font-bold text-slate-900 mb-4">My Clinical Trials</h2>
                     {trials.length === 0 ? (
-                      <div className="text-slate-500 text-sm">No trials found.</div>
+                      <div className="text-center py-8 text-slate-400">
+                        <div className="text-4xl mb-3">📋</div>
+                        <p>No active trials found.</p>
+                      </div>
                     ) : (
-                      <div className="space-y-3">
+                      <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
                         {trials.map(t => (
                           <div 
                             key={t.nct_id} 
                             onClick={() => setSelectedTrial(t.nct_id)}
-                            className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedTrial === t.nct_id ? 'bg-blue-50 border-blue-300' : 'hover:bg-slate-50'}`}
+                            className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedTrial === t.nct_id ? 'bg-blue-50/50 border-blue-500 shadow-md shadow-blue-500/10' : 'border-slate-100 hover:border-blue-200 hover:bg-slate-50'}`}
                           >
-                            <div className="font-semibold text-blue-900">{t.title}</div>
-                            <div className="text-xs text-slate-500 mt-1">{t.nct_id} • {t.status}</div>
+                            <div className={`font-bold mb-1 ${selectedTrial === t.nct_id ? 'text-blue-900' : 'text-slate-700'}`}>{t.title}</div>
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded-md">{t.nct_id}</span>
+                              <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">{t.status}</span>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -238,35 +267,54 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
                 )}
               </div>
               
-              <div className="space-y-6">
+              <div className="lg:col-span-7 space-y-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                 {role === "patient" && (
-                  <div className="bg-white p-6 rounded-xl border shadow-sm">
-                    <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-xl font-semibold">AI Trial Matches</h2>
-                      <Button variant="secondary" size="sm" onClick={syncTrials}>Simulate Trial Sync</Button>
+                  <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 min-h-[500px]">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                      <div>
+                        <h2 className="text-2xl font-extrabold text-slate-900">AI Trial Matches</h2>
+                        <p className="text-slate-500 text-sm mt-1">Powered by semantic vector analysis</p>
+                      </div>
+                      <Button variant="default" className="rounded-full shadow-md bg-blue-600 hover:bg-blue-700" onClick={syncTrials}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        Simulate Trial Sync
+                      </Button>
                     </div>
                     
                     {loadingMatches ? (
-                      <div className="text-center py-8 text-slate-500">Loading AI matches...</div>
+                      <div className="flex flex-col items-center justify-center py-20 text-blue-600">
+                        <svg className="animate-spin h-10 w-10 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <p className="font-semibold text-slate-600">Analyzing clinical matrices...</p>
+                      </div>
                     ) : matches.length === 0 ? (
-                      <div className="text-center py-12 text-slate-500 border-2 border-dashed rounded-lg">
-                        <p>No matches yet.</p>
-                        <p className="text-sm mt-2">Update your medical profile or run a sync to let our AI find suitable clinical trials.</p>
+                      <div className="text-center py-20 text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                        <div className="text-5xl mb-4">🤖</div>
+                        <h3 className="text-lg font-bold text-slate-900 mb-2">No matches found yet</h3>
+                        <p className="text-sm max-w-sm mx-auto leading-relaxed">Update your medical profile with accurate conditions and genomic markers, then run a sync to let our AI find suitable clinical trials.</p>
                       </div>
                     ) : (
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                         {matches.map((match, i) => (
-                          <div key={i} className="border p-4 rounded-lg bg-blue-50/50">
-                            <div className="flex justify-between items-start mb-2">
-                              <h3 className="font-semibold text-blue-900">{match.title}</h3>
-                              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold">{match.compatibility_score}% Match</span>
+                          <div key={i} className="group relative border border-slate-100 p-6 rounded-2xl bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                            <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500 rounded-l-2xl"></div>
+                            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+                              <h3 className="font-bold text-lg text-slate-900 leading-tight group-hover:text-blue-700 transition-colors">{match.title}</h3>
+                              <div className="flex flex-col items-end shrink-0">
+                                <span className={`text-sm font-extrabold px-3 py-1.5 rounded-full ${parseFloat(match.compatibility_score) > 85 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                  {match.compatibility_score}% Match
+                                </span>
+                              </div>
                             </div>
-                            <div className="text-sm text-slate-600 mb-2">
-                              <span className="font-medium">{match.nct_id}</span> • {match.status} • {match.location}
+                            <div className="flex flex-wrap gap-2 text-sm font-medium mb-4">
+                              <span className="text-slate-500 bg-slate-100 px-2 py-1 rounded-md">{match.nct_id}</span>
+                              <span className="text-slate-500 bg-slate-100 px-2 py-1 rounded-md">{match.status}</span>
+                              <span className="text-slate-500 bg-slate-100 px-2 py-1 rounded-md">📍 {match.location}</span>
                             </div>
-                            <p className="text-sm text-slate-700 italic border-l-2 border-blue-300 pl-3">
-                              &quot;{match.explanation}&quot;
-                            </p>
+                            <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100">
+                              <p className="text-sm text-slate-700 font-medium italic">
+                                &quot;{match.explanation}&quot;
+                              </p>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -275,35 +323,72 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
                 )}
 
                 {role === "researcher" && selectedTrial && (
-                  <div className="bg-white p-6 rounded-xl border shadow-sm">
-                    <h2 className="text-xl font-semibold mb-4">Patient Candidate Pipeline</h2>
-                    <p className="text-sm text-slate-600 mb-4">AI-matched patients for {selectedTrial}</p>
+                  <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50">
+                    <div className="mb-8">
+                      <h2 className="text-2xl font-extrabold text-slate-900">Candidate Pipeline</h2>
+                      <p className="text-slate-500 text-sm mt-1">AI-matched patients for <span className="font-semibold text-blue-600">{selectedTrial}</span></p>
+                    </div>
                     
                     {matchedPatients.length === 0 ? (
-                      <div className="text-center py-12 text-slate-500 border-2 border-dashed rounded-lg">
-                        No matching patients found.
+                      <div className="text-center py-20 text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                        <div className="text-5xl mb-4">🔍</div>
+                        <h3 className="text-lg font-bold text-slate-900 mb-2">Awaiting candidates</h3>
+                        <p className="text-sm max-w-sm mx-auto leading-relaxed">No patients match this trial&apos;s inclusion criteria yet.</p>
                       </div>
                     ) : (
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                         {matchedPatients.map((p, i) => (
-                          <div key={i} className="border p-4 rounded-lg bg-emerald-50/50">
-                            <div className="flex justify-between items-start mb-2">
-                              <h3 className="font-semibold text-emerald-900">{p.patient_id}</h3>
-                              <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded font-bold">{p.compatibility_score}% Match</span>
+                          <div key={i} className="group border border-slate-100 p-6 rounded-2xl bg-white shadow-sm hover:shadow-xl transition-all duration-300">
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                                  {p.patient_id.substring(0,2).toUpperCase()}
+                                </div>
+                                <div>
+                                  <h3 className="font-bold text-slate-900">Anonymized Candidate</h3>
+                                  <span className="text-xs font-semibold text-slate-400">ID: {p.patient_id}</span>
+                                </div>
+                              </div>
+                              <span className={`text-sm font-extrabold px-3 py-1.5 rounded-full ${p.compatibility_score > 85 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                {p.compatibility_score}% Match
+                              </span>
                             </div>
-                            <div className="text-sm text-slate-600 mb-2">
-                              Age: {p.age} • Conditions: {p.conditions || "None"} • Genes: {p.genes || "None"}
+                            
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <div className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Conditions</div>
+                                <div className="text-sm font-medium text-slate-700">{p.conditions || "None reported"}</div>
+                              </div>
+                              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <div className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Genomic Markers</div>
+                                <div className="text-sm font-medium text-slate-700">{p.genes || "None reported"}</div>
+                              </div>
                             </div>
-                            <p className="text-sm text-slate-700 italic border-l-2 border-emerald-300 pl-3">
-                              &quot;{p.explanation}&quot;
-                            </p>
-                            <div className="mt-3">
-                              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">Invite to Trial</Button>
+
+                            <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-100 mb-4">
+                              <p className="text-sm text-slate-700 font-medium italic">
+                                &quot;{p.explanation}&quot;
+                              </p>
+                            </div>
+                            
+                            <div className="flex justify-end mt-4">
+                              <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-md px-6 transition-transform hover:-translate-y-0.5">
+                                Invite to Trial
+                              </Button>
                             </div>
                           </div>
                         ))}
                       </div>
                     )}
+                  </div>
+                )}
+                
+                {role === "researcher" && !selectedTrial && (
+                  <div className="flex items-center justify-center h-[500px] border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50 text-slate-400 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                    <div className="text-center">
+                      <div className="text-6xl mb-4 opacity-50">🔬</div>
+                      <p className="font-semibold text-lg">Select a trial to view candidates</p>
+                    </div>
                   </div>
                 )}
               </div>
