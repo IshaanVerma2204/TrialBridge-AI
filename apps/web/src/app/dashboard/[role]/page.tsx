@@ -156,6 +156,22 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
     }
   };
 
+  const handleInvitationStatus = async (inviteId: string, status: string) => {
+    try {
+      await fetchWithAuth(`/patients/me/invitations/${inviteId}`, {
+        method: "PUT",
+        body: JSON.stringify({ status })
+      });
+      // Optimistically update the UI
+      setInvitations(prev => prev.map(inv => 
+        inv.invite_id === inviteId ? { ...inv, status } : inv
+      ));
+    } catch (error) {
+      console.error(`Failed to ${status} invitation`, error);
+      alert(`Error trying to ${status} invitation.`);
+    }
+  };
+
   const syncTrials = async () => {
     try {
       // First, get the user's current conditions
@@ -336,8 +352,16 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
                                 </div>
                               </div>
                               <div className="flex flex-col gap-2 shrink-0">
-                                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full">Accept Invite</Button>
-                                <Button size="sm" variant="outline" className="rounded-full">Decline</Button>
+                                {inv.status === 'pending' ? (
+                                  <>
+                                    <Button size="sm" onClick={() => handleInvitationStatus(inv.invite_id, 'accepted')} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full">Accept Invite</Button>
+                                    <Button size="sm" variant="outline" onClick={() => handleInvitationStatus(inv.invite_id, 'declined')} className="rounded-full">Decline</Button>
+                                  </>
+                                ) : (
+                                  <span className={`text-sm font-bold px-4 py-2 rounded-full text-center ${inv.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
+                                    {inv.status === 'accepted' ? 'Accepted ✓' : 'Declined'}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>

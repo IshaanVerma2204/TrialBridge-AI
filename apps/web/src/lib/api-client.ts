@@ -34,6 +34,10 @@ export const patientApi = {
     body: JSON.stringify(data),
   }),
   getInvitations: () => fetchClient('/patients/me/invitations'),
+  updateInvitation: (inviteId: string, status: string) => fetchClient(`/patients/me/invitations/${inviteId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ status })
+  }),
 };
 
 export const researcherApi = {

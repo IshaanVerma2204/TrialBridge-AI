@@ -67,6 +67,40 @@ def get_patient_invitations(
         
     return results
 
+from pydantic import BaseModel
+class InviteStatusUpdate(BaseModel):
+    status: str
+
+@router.put("/me/invitations/{invite_id}")
+def update_invitation_status(
+    invite_id: str,
+    update_data: InviteStatusUpdate,
+    db: Session = Depends(get_db), 
+    current_user = Depends(get_current_user)
+):
+    if current_user.role != "patient":
+        raise HTTPException(status_code=403, detail="Only patients can update invitations")
+        
+    patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+        
+    invite = db.query(TrialInvitation).filter(
+        TrialInvitation.id == invite_id,
+        TrialInvitation.patient_id == f"PAT-{str(patient.id)[:6].upper()}"
+    ).first()
+    
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+        
+    if update_data.status not in ["accepted", "declined"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+        
+    invite.status = update_data.status
+    db.commit()
+    
+    return {"status": "success", "message": f"Invitation {update_data.status}"}
+
 
 @router.get("/me", response_model=PatientResponse)
 def get_my_patient_profile(
