@@ -75,6 +75,9 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
   const [stats, setStats] = useState<AdminStats | null>(null);
 
   useEffect(() => {
+    // Prevent fetching if the user doesn't match the current dashboard role
+    if (!user || user.role !== role) return;
+
     if (role === "patient") {
       const getPatientData = async () => {
         try {
@@ -119,7 +122,7 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
       };
       getStats();
     }
-  }, [role]);
+  }, [role, user]);
 
   useEffect(() => {
     if (role === "researcher" && selectedTrial) {

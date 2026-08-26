@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/auth-context";
 
 const profileSchema = z.object({
   age: z.string().min(1, "Age is required"),
@@ -35,7 +36,14 @@ export function PatientProfileForm() {
     },
   });
 
+  const { user } = useAuth();
+
   useEffect(() => {
+    if (!user || user.role !== "patient") {
+      setIsLoading(false);
+      return;
+    }
+
     const fetchProfile = async () => {
       try {
         const data = await patientApi.getProfile();
@@ -54,7 +62,7 @@ export function PatientProfileForm() {
       }
     };
     fetchProfile();
-  }, [reset]);
+  }, [reset, user]);
 
   const onSubmit = async (data: ProfileFormValues) => {
     setIsSaving(true);
