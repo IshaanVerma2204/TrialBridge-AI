@@ -42,9 +42,9 @@ def get_matched_patients(
     results = []
     for p in patients:
         # Generate a random high score for demonstration if they have a profile
-        score = 85 + (p.id % 15)
+        score = 85 + (hash(p.id) % 15)
         results.append({
-            "patient_id": f"PAT-{p.id:04d}", # Anonymized ID
+            "patient_id": f"PAT-{str(p.id)[:6].upper()}", # Anonymized ID
             "age": p.age,
             "conditions": p.conditions,
             "genes": p.genes,
