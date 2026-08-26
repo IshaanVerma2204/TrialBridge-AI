@@ -372,7 +372,10 @@ export default function DashboardPage(props: { params: Promise<{ role: string }>
                             </div>
                             
                             <div className="flex justify-end mt-4">
-                              <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-md px-6 transition-transform hover:-translate-y-0.5">
+                              <Button 
+                                onClick={() => alert(`Invite sent to ${p.patient_id} for trial ${selectedTrial}!`)}
+                                className="bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-md px-6 transition-transform hover:-translate-y-0.5"
+                              >
                                 Invite to Trial
                               </Button>
                             </div>
