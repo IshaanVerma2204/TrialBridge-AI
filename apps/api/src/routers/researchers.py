@@ -16,9 +16,8 @@ def get_researcher_trials(
     if current_user.role != "researcher":
         raise HTTPException(status_code=403, detail="Only researchers can view their trials")
     
-    # For now, we return all trials as if they belong to this researcher
-    # In a real app, there would be a many-to-many relationship
-    trials = db.query(ClinicalTrial).limit(10).all()
+    # Fetch up to 50 of the latest trials across all diseases
+    trials = db.query(ClinicalTrial).order_by(ClinicalTrial.id.desc()).limit(50).all()
     return trials
 
 @router.get("/trials/{nct_id}/patients")
