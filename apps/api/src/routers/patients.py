@@ -29,7 +29,8 @@ def get_patient_matches(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
-from src.models import TrialInvitation, ClinicalTrial
+from src.models import ClinicalTrial, TrialInvitation
+
 
 @router.get("/me/invitations")
 def get_patient_invitations(
@@ -68,6 +69,8 @@ def get_patient_invitations(
     return results
 
 from pydantic import BaseModel
+
+
 class InviteStatusUpdate(BaseModel):
     status: str
 

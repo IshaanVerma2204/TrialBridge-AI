@@ -57,10 +57,13 @@ def get_matched_patients(
     return results
 
 from pydantic import BaseModel
+
+
 class InviteRequest(BaseModel):
     patient_id: str
 
 from src.models import TrialInvitation
+
 
 @router.post("/trials/{nct_id}/invite")
 def invite_patient(
